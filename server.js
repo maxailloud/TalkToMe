@@ -2,18 +2,18 @@
  * Module dependencies.
  */
 const
-    path = require('path'),
+    path    = require('path'),
     express = require('express'),
-    app = module.exports = express.createServer(),
-    port = process.env.PORT || 1337
+    app     = express.createServer(),
+    port    = process.env.PORT || 1337
+    io      = require('socket.io').listen(app)
 ;
-
 
 // Configuration
 app.configure(function() {
     this.set('views', path.join(__dirname, 'views'));
     this.set('view engine', 'ejs');
-    this.set("view options", { layout: "layout.ejs" });
+    this.set("view options", { layout: false });
     this.use(express.static(path.join(__dirname, '/public')));
 
     // Allow parsing cookies from request headers
@@ -36,22 +36,26 @@ app.configure('production', function(){
     this.use(express.errorHandler());
 });
 
-/** Routes */
-app.get('/', function (req, res, next) {
-    res.render('index', { locals: { 'body': 'bidule' } });
-});
+// WebSocket communication
+io.sockets.on('connection', function(socket)
+{
+    socket.on('disconnect', function()
+    {
+        console.log('user disconnected');
+    });
 
-app.get('/session-index', function (req, res, next) {
-    // Increment "index" in session
-    req.session.index = (req.session.index || 0) + 1;
-    // View "session-index.ejs"
-    res.render('session-index', {
-        "index":  req.session.index,
-        "sessId": req.sessionID
+    socket.on('authenticate', function(username)
+    {
+        socket.emit('authenticated', username);
     });
 });
 
-/** Start server */
+// Routes
+app.get('/', function (req, res, next) {
+    res.render('index.ejs');
+});
+
+// Start server
 app.listen(port, function(){
     console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });

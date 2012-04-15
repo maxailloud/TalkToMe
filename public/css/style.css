@@ -1,0 +1,34 @@
+@import url(http://fonts.googleapis.com/css?family=Ubuntu);
+
+body, p, textarea, button
+{
+    font-family: 'Ubuntu', "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+div#main
+{
+    margin-top: 60px;
+}
+
+.sidebar-nav
+{
+    padding: 9px 0;
+    height: 480px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#messages-content
+{
+    height: 400px;
+    margin-left: 0px;
+    padding: 5px;
+    overflow-y: scroll;
+}
+
+#input
+{
+    margin-left: 0px;
+    text-align: center;
+    margin-top: 20px;
+}
