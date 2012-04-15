@@ -13,28 +13,19 @@
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="#">TalkToMe</a>
-                    <p class="navbar-text pull-right" id="connectedLogout"><a href="#" id="logout">Log out</a></p>
-                    <p class="navbar-text pull-right" id="connectedLogin">Logged in as <span id="displayedUsername"><%= username %></span> </p>
                 </div>
             </div>
         </div>
         <div class="container" id="main">
-            <div class="row" id="loginWrapper">
-                <div class="span4">
-                    <h1>Liste des salons</h1>
-                    <ul id="roomList">
-                        <%- rooms %>
-                    </ul>
-                </div>
-            </div>
             <div class="row">
-                <div class="span4">
-                    <form class="well" method="get" action="/room">
+                <div class="span4 offset4">
+                    <form class="well" method="post">
                         <div class="control-group">
                             <div class="controls">
-                                <input type="text" name="room" id="room" required="required" placeholder="Enter room name" />
+                                <% if (error) { %><p>Erreur: <%= error %></p><% } %>
+                                <input type="text" name="username" id="username" autofocus required placeholder="Enter your username" <% if (username) { %> value="<%= username %>"<% } %>/>
                             </div>
-                            <button type="submit" class="btn">Create room</button>
+                            <button type="submit" class="btn">Login</button>
                         </div>
                     </form>
                 </div>
