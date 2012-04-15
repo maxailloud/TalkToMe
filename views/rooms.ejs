@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width,initial-scale=1" name="viewport">
+        <title>TalkToMe</title>
+        <link href="vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
+        <link href="vendor/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="#">TalkToMe</a>
+                    <p class="navbar-text pull-right hide" id="connectedLogout"><a href="#" id="logout">Log out</a></p>
+                    <p class="navbar-text pull-right hide" id="connectedLogin">Logged in as <span id="displayedUsername"></span> </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="main">
+            <h1>Liste des salons</h1>
+            <ul id="roomList"></ul>
+        </div>
+
+        <script src="vendor/jquery.js"></script>
+        <script src="http://localhost:1337/socket.io/socket.io.js"></script>
+        <script src="js/rooms.js"></script>
+        <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    </body>
+</html>

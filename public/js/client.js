@@ -122,4 +122,24 @@ $(function(){
     $(logout).on('click', function(){
         disconnect();
     });
+
+    function getRooms()
+    {
+        socket = io.connect('http://localhost:1337', {
+            'force new connection'      : true,
+            'reconnect'                 : true,
+            'reconnection delay'        : 500,
+            'max reconnection attempts' : nbReconnection,
+            'log level'                 : 1
+        });
+
+        socket.on('connection', function(socket)
+        {
+            console.log(socket._events);
+//            socket.on('ping', function(data)
+//            {
+//                console.log(socket._events);
+//            });
+        });
+    }
 });
