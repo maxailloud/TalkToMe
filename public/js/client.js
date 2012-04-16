@@ -5,58 +5,48 @@ $(function(){
 
     var logout       = '#logout';
 
-    var loginForm    = '#loginForm';
-    var loginWrapper = '#loginWrapper';
-    var chatWrapper  = '#chatWrapper';
+    var loginForm        = '#loginForm';
+    var loginWrapper     = '#loginWrapper';
+    var connectedWrapper = '#connectedWrapper';
+    var chatWrapper      = '#chatWrapper';
+    var roomForm         = '#roomForm';
+    var roomInput        = '#roomInput';
+    var roomsWrapper     = '#roomsWrapper';
+    var roomList         = '#roomList';
 
-    var messageForm  = '#messageForm';
+    var messageForm      = '#messageForm';
+    var messageInput     = '#messageInput';
 
     var connectedLogout     = '#connectedLogout';
     var connectedLogin      = '#connectedLogin';
     var displayedUsername   = '#displayedUsername';
 
-    var username = null;
+    var currentUsername = null;
 
-    socket = io.connect('http://localhost:1337', {
-        'force new connection'      : true,
-        'reconnect'                 : true,
-        'reconnection delay'        : 500,
-        'max reconnection attempts' : nbReconnection,
-        'log level'                 : 1
-    });
-
-    function disconnect()
-    {
-        if(null != socket)
-        {
-            socket.disconnect();
-
-            $(loginWrapper).show();
-            $(chatWrapper).hide();
-
-            $(connectedLogin).hide();
-            $(connectedLogout).hide();
-        }
-    }
+    createWeSocket();
 
     socket.on('connect', function()
     {
-        socket.emit('authenticate', username);
-
         console.log('connected');
     });
 
-    socket.on('authenticated', function(connectedUsername)
+    socket.on('error', function(reason)
     {
-        $(displayedUsername).html(connectedUsername);
+        console.error('Unable to connect Socket.IO', reason);
+    });
 
-        $(loginWrapper).hide();
-        $(chatWrapper).show();
-
-        $(connectedLogin).show();
-        $(connectedLogout).show();
+    socket.on('authenticated', function(username, rooms)
+    {
+        connect(username, rooms);
 
         console.log('authenticated');
+    });
+
+    socket.on('alreadyAuthenticated', function(username, rooms)
+    {
+        connect(username, rooms);
+
+        console.log('alreadyAuthenticated');
     });
 
     socket.on('connecting', function(transportType)
@@ -66,6 +56,19 @@ $(function(){
 
     socket.on('disconnect', function()
     {
+        console.log('disconnect');
+    });
+
+    socket.on('disconnected', function()
+    {
+        socket.disconnect();
+
+        $(loginWrapper).show();
+        $(roomsWrapper).hide();
+        $(connectedWrapper).hide();
+
+        socket = null;
+
         console.log('disconnected');
     });
 
@@ -90,36 +93,112 @@ $(function(){
         console.log('reconnection failed');
     });
 
-    function handleLogin()
+    socket.on('read', function(data)
     {
-        username = $('#username').val();
+        console.log(data);
+    });
 
-        if('' != username)
+    socket.on('room created', function()
+    {
+        console.log('room created');
+    });
+
+    function createWeSocket()
+    {
+        socket = io.connect('http://localhost:1337',
         {
-            connect();
+            'force new connection'      : true,
+            'reconnect'                 : true,
+            'reconnection delay'        : 500,
+            'max reconnection attempts' : nbReconnection,
+            'log level'                 : 1
+        });
+    }
+
+    function displayRooms(rooms)
+    {
+        console.log(rooms);
+        var listRooms = '';
+        if(0 == rooms.length)
+        {
+            listRooms = 'No room';
         }
         else
         {
-            console.log('pouet');
+            for(var i =0; i < rooms.length; i++)
+            {
+                listRooms += '<li>' + i + '(' + rooms[i].length + ')</li>';
+            }
+        }
+
+        $(roomList).html(listRooms);
+    }
+
+    function connect(username, rooms)
+    {
+        currentUsername = username;
+
+        displayRooms(rooms);
+
+        $(displayedUsername).html(username);
+
+        $(loginWrapper).hide();
+        $(roomsWrapper).show();
+        $(connectedWrapper).show();
+    }
+
+    function disconnect()
+    {
+        if(null != socket)
+        {
+            socket.emit('disconnectUser');
+        }
+    }
+
+    function handleLogin()
+    {
+        currentUsername = $('#username').val();
+
+        if('' != currentUsername)
+        {
+            if(null == socket)
+            {
+                createWeSocket();
+            }
+
+            socket.emit('authenticate', currentUsername);
+        }
+        else
+        {
+            console.log('no login');
         }
     }
 
     $(loginForm).on('submit', function(event)
     {
         handleLogin();
+
         event.preventDefault();
     });
-
-    socket.on('read', function(data)
-    {
-        console.log(data);
-    });
-
 
     function sendMessage()
     {
         var message = $(messageInput).val();
         socket.emit('write', message);
+    }
+
+    function createRoom()
+    {
+        var room = $(roomInput).val();
+
+        if('' != room)
+        {
+            socket.emit('create room', currentUsername);
+        }
+        else
+        {
+            console.log('no room');
+        }
     }
 
     $(logout).on('click', function(event)
@@ -129,10 +208,17 @@ $(function(){
         event.preventDefault();
     });
 
-    $(messageForm).on('submit', function(event){
+    $(roomForm).on('submit', function(event)
+    {
+        createRoom();
+
+        event.preventDefault();
+    });
+
+    $(messageForm).on('submit', function(event)
+    {
         sendMessage();
 
         event.preventDefault();
     });
-    }
 });

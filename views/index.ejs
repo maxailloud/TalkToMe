@@ -13,41 +13,40 @@
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="#">TalkToMe</a>
-                    <p class="navbar-text pull-right" id="connectedLogout"><a href="#" id="logout">Log out</a></p>
-                    <p class="navbar-text pull-right" id="connectedLogin">Logged in as <span id="displayedUsername"></span> </p>
+                    <p class="navbar-text pull-right hide" id="connectedWrapper">
+                        Logged in as <span id="displayedUsername"></span> | <a href="#" id="logout">Log out</a>
+                    </p>
                 </div>
             </div>
         </div>
         <div class="container" id="main">
 
-            <div class="row" id="roomsWrapper">
-                <div class="span4">
-                    <h1>Liste des salons</h1>
-                    <ul id="roomList">
-                        <%- rooms %>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="span4">
-                    <form class="well" method="get" action="/room">
-                        <div class="control-group">
-                            <div class="controls">
-                                <input type="text" name="room" id="room" required="required" placeholder="Enter room name" />
+            <div class="hide" id="roomsWrapper">
+                <div class="row">
+                    <div class="span4">
+                        <h1>Liste des salons</h1>
+                        <ul id="roomList"></ul>
+                    </div>
+                    <div class="span4">
+                        <form class="well" method="get" id="roomForm">
+                            <div class="control-group">
+                                <div class="controls">
+                                    <input type="text" name="room" id="roomInput" required="required" placeholder="Enter room name" />
+                                </div>
+                                <button type="submit" class="btn">Create room</button>
                             </div>
-                            <button type="submit" class="btn">Create room</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             <div class="row" id="loginWrapper">
                 <div class="span4 offset4">
-                    <form class="well" method="post">
+                    <form class="well" method="post" id="loginForm">
                         <div class="control-group">
                             <div class="controls">
                                 <p id="error"></p>
-                                <input type="text" name="username" id="username" autofocus required placeholder="Enter your username" />
+                                <input type="text" class="span3" name="username" id="username" autofocus="autofocus" required="required" placeholder="Enter your username" />
                             </div>
                             <button type="submit" class="btn">Login</button>
                         </div>
@@ -55,7 +54,7 @@
                 </div>
             </div>
 
-            <div class="row" id="chatWrapper">
+            <div class="row hide" id="chatWrapper">
                 <div class="span4">
                     <div class="well sidebar-nav" id="users">
                         <ul class="nav nav-list" id="user-list">

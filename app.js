@@ -10,7 +10,7 @@ const
     parseCookie = require('connect').utils.parseCookie;
 ;
 
-var clients = {};
+var users = {};
 
 // Configuration
 app.configure(function() {
@@ -46,16 +46,67 @@ app.configure('production', function(){
 // WebSocket communication
 io.sockets.on('connection', function(socket)
 {
+    socket.join('test');
+    socket.broadcast.to('test').emit('new tester');
+
+    console.log(users[socket.handshake.sessionID]);
+    if(undefined != users[socket.handshake.sessionID] && null != users[socket.handshake.sessionID])
+    {
+        socket.emit('alreadyAuthenticated', users[socket.handshake.sessionID], getRooms());
+    }
+
     socket.on('disconnect', function()
     {
-        console.log('user disconnected');
+        console.log('user disconnected or refreshing');
+    });
+
+    socket.on('disconnectUser', function()
+    {
+        delete users[socket.handshake.sessionID];
+
+        socket.emit('disconnected');
     });
 
     socket.on('authenticate', function(username)
     {
-        socket.emit('authenticated', username);
+        socket.handshake.username = username;
+        users[socket.handshake.sessionID] = username;
+
+        console.log('rooms : ' + getRooms());
+        socket.emit('authenticated', username, getRooms());
+    });
+
+    socket.on('create room', function(roomName)
+    {
+//        socket.join(roomName);
+
+        socket.emit('room created');
     });
 });
+
+function getRooms()
+{
+    var rooms = io.sockets.manager.rooms;
+    console.log(rooms);
+
+    // Delete default room
+    delete rooms[''];
+
+    console.log(rooms);
+
+    var roomList = Array();
+
+    for(var i in rooms)
+    {
+        console.log(i);
+        console.log(rooms[i]);
+        roomList[i] = rooms[i].length;
+    }
+
+    console.log(roomList);
+
+    return roomList;
+}
 
 // Websokcet authorization configuration
 io.sockets.authorization(function(handshakeData, callback)
@@ -69,66 +120,19 @@ io.sockets.authorization(function(handshakeData, callback)
     // No session? Refuse connection
     if(!sessionID)
     {
-        callback('No session', false);
+        callback('No session found', false);
     }
     else
     {
-//        console.log('pouet : ');
-//        console.log(cookies);
-
-        // Store session ID in handshake data, we'll use it later to associate
-        // session with open sockets
         handshakeData.sessionID = sessionID;
-        // On récupère la session utilisateur, et on en extrait son username
-        app.sessionStore.get(sessionID, function(err, session)
-        {
-            if(!err && session && session.username)
-            {
-                // On stocke ce username dans les données de l'authentification, pour réutilisation directe plus tard
-                handshakeData.username = session.username;
-                // OK, on accepte la connexion
-                callback(null, true);
-            }
-            else
-            {
-                // Session incomplète, ou non trouvée
-                callback(err || 'User not authenticated', false);
-            }
-        });
+        callback(null, true);
     }
 });
 
 // Routes
 app.get('/', function (req, res, next)
 {
-    var rooms = io.sockets.manager.rooms;
-
-    // Delete default room
-    delete rooms[''];
-
-    var roomList = '';
-    var nbRoom = 0;
-
-    for(var i in rooms)
-    {
-        roomList += '<li><a href="/room/"' + i + ' title="Go to ' + i + ' room">' + i + '</a>(' + rooms[i].length + ')</li>';
-        nbRoom++;
-    }
-
-    if(0 == nbRoom)
-    {
-        roomList = '<li>Aucun salon</li>';
-    }
-
-    res.render('index', { 'username': '', 'rooms': roomList });
-});
-
-app.get('/room/:room', function (req, res, next)
-{
-    console.log(req.params.room);
-    var rooms = io.sockets.manager.rooms;
-    console.log(rooms);
-    res.render('room', { "username": req.session.username });
+    res.render('index');
 });
 
 // Start server
