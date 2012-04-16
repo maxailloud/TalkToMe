@@ -2,11 +2,11 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta content="width=device-width,initial-scale=1" name="viewport">
+        <meta content="width=device-width,initial-scale=1" name="viewport" />
         <title>TalkToMe</title>
-        <link href="/vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
-        <link href="/vendor/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-        <link href="/css/style.css" rel="stylesheet">
+        <link href="/vendor/bootstrap/css/bootstrap.css" rel="stylesheet" />
+        <link href="/vendor/bootstrap/css/bootstrap-responsive.css" rel="stylesheet" />
+        <link href="/css/style.css" rel="stylesheet" />
     </head>
     <body>
         <div class="navbar navbar-fixed-top">
@@ -14,12 +14,13 @@
                 <div class="container">
                     <a class="brand" href="#">TalkToMe</a>
                     <p class="navbar-text pull-right" id="connectedLogout"><a href="#" id="logout">Log out</a></p>
-                    <p class="navbar-text pull-right" id="connectedLogin">Logged in as <span id="displayedUsername"><%= username %></span> </p>
+                    <p class="navbar-text pull-right" id="connectedLogin">Logged in as <span id="displayedUsername"></span> </p>
                 </div>
             </div>
         </div>
         <div class="container" id="main">
-            <div class="row" id="loginWrapper">
+
+            <div class="row" id="roomsWrapper">
                 <div class="span4">
                     <h1>Liste des salons</h1>
                     <ul id="roomList">
@@ -39,8 +40,47 @@
                     </form>
                 </div>
             </div>
+
+            <div class="row" id="loginWrapper">
+                <div class="span4 offset4">
+                    <form class="well" method="post">
+                        <div class="control-group">
+                            <div class="controls">
+                                <p id="error"></p>
+                                <input type="text" name="username" id="username" autofocus required placeholder="Enter your username" />
+                            </div>
+                            <button type="submit" class="btn">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row" id="chatWrapper">
+                <div class="span4">
+                    <div class="well sidebar-nav" id="users">
+                        <ul class="nav nav-list" id="user-list">
+                            <li class="nav-header">Chatty</li>
+                            <li class="active"><a href="#users"><i class="icon-inbox"></i>All Messages</a></li>
+                            <li class="nav-header">Users(<span id="num-users">1</span>)</li>
+                            <li class=""><a href="#users/c3"><i class="icon-star"></i>test</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="span8" id="messages">
+                    <div class="row well" id="messages-content"></div>
+                    <div class="row" id="input">
+                        <form class="well form-inline" id="messageForm">
+                            <button type="submit" class="btn" id="sendMessage">Send</button>
+                            <input type="text" class="span6" placeholder="Your message" id="message" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
+        <script src="/vendor/jquery.js"></script>
         <script src="http://localhost:1337/socket.io/socket.io.js"></script>
+        <script src="/js/client.js"></script>
     </body>
 </html>
