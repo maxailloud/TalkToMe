@@ -1,14 +1,12 @@
 /**
  * Module dependencies.
  */
-const
-    path        = require('path'),
-    express     = require('express'),
-    app         = express.createServer(),
-    port        = process.env.PORT || 1337
-    io          = require('socket.io').listen(app),
-    parseCookie = require('connect').utils.parseCookie;
-;
+const path        = require('path');
+const express     = require('express');
+const app         = express.createServer();
+const port        = process.env.PORT || 1337;
+const io          = require('socket.io').listen(app);
+const parseCookie = require('connect').utils.parseCookie;
 
 var users = {};
 
@@ -36,81 +34,75 @@ app.configure(function() {
         "store":  this.sessionStore
     }));
 });
-app.configure('development', function(){
+app.configure('development', function() {
     this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
-app.configure('production', function(){
+app.configure('production', function() {
     this.use(express.errorHandler());
 });
 
 // WebSocket communication
-io.sockets.on('connection', function(socket)
-{
-    socket.join('test');
-    socket.broadcast.to('test').emit('new tester');
+io.sockets.on('connection', function(socket) {
 
-    console.log(users[socket.handshake.sessionID]);
-    if(undefined != users[socket.handshake.sessionID] && null != users[socket.handshake.sessionID])
-    {
-        socket.emit('alreadyAuthenticated', users[socket.handshake.sessionID], getRooms());
+    if(undefined !== users[socket.handshake.sessionID] && null != users[socket.handshake.sessionID]) {
+        socket.emit('alreadyAuthenticated', { 'username': users[socket.handshake.sessionID], 'rooms': getRooms() });
     }
 
-    socket.on('disconnect', function()
-    {
+    socket.on('disconnect', function() {
         console.log('user disconnected or refreshing');
     });
 
-    socket.on('disconnectUser', function()
-    {
+    socket.on('disconnectUser', function() {
         delete users[socket.handshake.sessionID];
 
         socket.emit('disconnected');
     });
 
-    socket.on('authenticate', function(username)
-    {
+    socket.on('authenticate', function(username) {
         socket.handshake.username = username;
         users[socket.handshake.sessionID] = username;
 
-        console.log('rooms : ' + getRooms());
-        socket.emit('authenticated', username, getRooms());
+        socket.emit('authenticated', { 'username': username, 'rooms': getRooms() });
     });
 
-    socket.on('create room', function(roomName)
-    {
-//        socket.join(roomName);
+    socket.on('create room', function(roomName) {
+        var rooms = getRooms();
 
-        socket.emit('room created');
+        if(undefined === rooms[roomName]) {
+            socket.join(roomName);
+
+            // Ping everybody that a new room has been creating
+            socket.broadcast.to('').emit('new room', getRooms());
+
+            socket.emit('room created', roomName);
+        }
+        else
+        {
+            socket.emit('room not created', 'Room "' + roomName + '" already exists, join it if you want to talk into.');
+        }
+    });
+
+    socket.on('leave room', function() {
+        console.log('leave room');
     });
 });
 
-function getRooms()
-{
+function getRooms() {
     var rooms = io.sockets.manager.rooms;
-    console.log(rooms);
 
-    // Delete default room
-    delete rooms[''];
+    var roomList = {};
 
-    console.log(rooms);
-
-    var roomList = Array();
-
-    for(var i in rooms)
-    {
-        console.log(i);
-        console.log(rooms[i]);
-        roomList[i] = rooms[i].length;
+    for(var i in rooms) {
+        if('' !== i) {
+            roomList[i.replace('/', '')] = rooms[i].length;
+        }
     }
-
-    console.log(roomList);
 
     return roomList;
 }
 
 // Websokcet authorization configuration
-io.sockets.authorization(function(handshakeData, callback)
-{
+io.sockets.authorization(function(handshakeData, callback) {
     // Read cookies from handshake headers
     var cookies = parseCookie(handshakeData.headers.cookie);
 
@@ -118,25 +110,21 @@ io.sockets.authorization(function(handshakeData, callback)
     var sessionID = cookies['connect.sid'];
 
     // No session? Refuse connection
-    if(!sessionID)
-    {
+    if(!sessionID) {
         callback('No session found', false);
     }
-    else
-    {
+    else {
         handshakeData.sessionID = sessionID;
         callback(null, true);
     }
 });
 
 // Routes
-app.get('/', function (req, res, next)
-{
+app.get('/', function (req, res, next) {
     res.render('index');
 });
 
 // Start server
-app.listen(port, function()
-{
+app.listen(port, function() {
     console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
