@@ -29,6 +29,7 @@ $(function() {
     var displayedUsername   = '#displayedUsername';
 
     var currentUsername     = null;
+    var currentRoom         = null;
 
     createWeSocket();
 
@@ -108,13 +109,13 @@ $(function() {
     socket.on('room created', function(roomName) {
         console.log('room created');
 
-        joinNewRoom(roomName);
+        roomJoined(roomName);
     });
 
-    socket.on('new room', function(rooms) {
-        console.log('new room');
+    socket.on('room leaved', function(rooms) {
+        console.log('room leaved');
 
-        displayRooms(rooms);
+        roomLeaved(rooms);
     });
 
     socket.on('room not created', function(error) {
@@ -123,6 +124,11 @@ $(function() {
 
     socket.on('new user', function() {
         console.log('new user');
+    });
+
+    socket.on('update rooms', function(rooms) {
+        console.log('update rooms');
+        displayRooms(rooms);
     });
 
     function displayRooms(rooms) {
@@ -141,40 +147,29 @@ $(function() {
         $(roomList).html(listRooms);
     }
 
-    function joinNewRoom(room) {
+    function roomJoined(room) {
+        currentRoom = room;
+
         $(roomName).html(room);
         $(nbUser).html(1);
 
-        displayUser();
-
-        // Liste des utilisateurs du salon
-        $(chatWrapper).show();
-
-        $(roomsWrapper).hide();
-    }
-
-    function joinRoom() {
-        displayUser();
-
-        // Liste des utilisateurs du salon
         $(chatWrapper).show();
 
         $(roomsWrapper).hide();
     }
 
     function leaveRoom() {
-        displayUser();
+        socket.emit('leave room', currentRoom);
+    }
 
-        socket.emit('leave room');
+    function roomLeaved(rooms) {
+        currentRoom = null;
 
-        // Liste des utilisateurs du salon
+        displayRooms(rooms);
+
         $(chatWrapper).hide();
 
         $(roomsWrapper).show();
-    }
-
-    function displayUser() {
-
     }
 
     function connect(username, rooms) {
