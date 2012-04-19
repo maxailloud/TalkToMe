@@ -69,12 +69,9 @@ io.sockets.on('connection', function(socket) {
         var rooms = getRooms();
 
         if(undefined === rooms[roomName]) {
-            socket.leave('');
             socket.join(roomName);
 
-            console.log('create room');
             var updatedRooms = getRooms();
-            console.log(updatedRooms);
 
             socket.broadcast.to('').emit('update rooms', updatedRooms);
 
@@ -87,18 +84,9 @@ io.sockets.on('connection', function(socket) {
     });
 
     socket.on('leave room', function(roomName) {
-        console.log('leave room');
-        console.log(socket.manager.rooms);
-        console.log(socket.manager.roomClients);
-        console.log(roomName);
         socket.leave(roomName);
-        console.log(socket.manager.rooms);
-        console.log(socket.manager.roomClients);
-        socket.join('');
-        console.log('leave room');
 
         var rooms = getRooms();
-        console.log(rooms);
 
         socket.broadcast.to('').emit('update rooms', rooms);
 
@@ -111,10 +99,7 @@ function getRooms() {
 
     var roomList = {};
 
-    console.log('getrooms');
-    console.log(rooms);
     for(var i in rooms) {
-        console.log(i);
         if('' !== i) {
             roomList[i.replace('/', '')] = rooms[i].length;
         }
